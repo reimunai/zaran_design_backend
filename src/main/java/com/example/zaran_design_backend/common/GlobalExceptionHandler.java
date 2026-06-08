@@ -1,12 +1,20 @@
 package com.example.zaran_design_backend.common;
 
-import org.springframework.http.HttpStatus;
+import com.example.zaran_design_backend.service.BusinessException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * 处理携带业务错误码的业务异常（如 4042、4031、403 等）
+     */
+    @ExceptionHandler(BusinessException.class)
+    public Result<Void> handleBusinessException(BusinessException e) {
+        return Result.error(e.getCode(), e.getMessage());
+    }
 
     /**
      * 处理参数校验异常

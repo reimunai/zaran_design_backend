@@ -5,8 +5,8 @@
 
 ### 变量定义（首次执行注册/登录后，手动将token填入下方变量）
 @baseUrl = http://localhost:8080/api
-@accessToken = eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoidG91cmlzdCIsInR5cGUiOiJhY2Nlc3MiLCJ1c2VySWQiOjIsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJzdWIiOiJ0ZXN0dXNlciIsImlhdCI6MTc4MDc1NjM0MiwiZXhwIjoxNzgwNzYzNTQyfQ.JQ7vmGWeYCPr4hSIlUoucE06d8DyGjj1nVyCa4uxj-Yehcymf9MpgB1YZF3jYBGS
-@refreshToken = eyJhbGciOiJIUzM4NCJ9.eyJ0eXBlIjoicmVmcmVzaCIsInVzZXJJZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsInN1YiI6InRlc3R1c2VyIiwiaWF0IjoxNzgwNzU2MzQyLCJleHAiOjE3ODEzNjExNDJ9.hPKqcyrSMRmZ8k4lW1RwDJMqP8pV8_2by_AKGF848V5Y7T2cD1ILCqFSXprZJ-h7
+@accessToken = eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoidG91cmlzdCIsInR5cGUiOiJhY2Nlc3MiLCJ1c2VySWQiOjIsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJzdWIiOiJ0ZXN0dXNlciIsImlhdCI6MTc4MDg5NzI4NSwiZXhwIjoxNzgwOTA0NDg1fQ.9py0Kz4UQych1Lh_kM-wdDFWbkPiTTG_LWzlEBe3L_ofP63Cq75V5g7bKHSjC8Ji
+@refreshToken = eyJhbGciOiJIUzM4NCJ9.eyJ0eXBlIjoicmVmcmVzaCIsInVzZXJJZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsInN1YiI6InRlc3R1c2VyIiwiaWF0IjoxNzgwODk3Mjg1LCJleHAiOjE3ODE1MDIwODV9.ktxM5iSc0g-VYI7SpKv7OqOkkEH5FM06BLppb3irphvPE0vknvXiyV2rKTMTnjWN
 
 
 
@@ -192,3 +192,197 @@ Authorization: Bearer {{accessToken}}
 
 ### 2.13 未登录访问需认证的接口（应返回401/403）
 GET {{baseUrl}}/users/profile
+
+
+
+### ============================================
+### 四、草图绘制模块 /api/sketches
+### （需先执行登录，将返回的accessToken填入顶部变量）
+### 测试顺序建议：4.13 → 4.1 → 4.2 → 4.3 → 4.4 → 4.8 → 4.9 → ...
+### 将各接口路径中的 {sketchId}/{versionId} 替换为前序接口返回的真实ID
+### ============================================
+
+### 4.13 获取草图分类树（公开接口，无需token）
+GET {{baseUrl}}/sketches/categories
+
+
+### 4.14 新增草图分类（仅传承人/管理员；普通游客会返回403）
+### 库中无分类时，先用传承人/管理员账号执行此接口，再用返回的 categoryId 跑 4.1
+POST {{baseUrl}}/sketches/categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "云纹",
+  "description": "象征吉祥如意",
+  "parentId": null,
+  "sortOrder": 1
+}
+
+
+### 4.14b 新增子分类（parentId 填 4.14 返回的 categoryId）
+POST {{baseUrl}}/sketches/categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "单螺旋",
+  "description": "螺旋纹子类",
+  "parentId": 1,
+  "sortOrder": 1
+}
+
+
+### 4.1 创建新草图
+POST {{baseUrl}}/sketches
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "云纹草图v1",
+  "width": 1024,
+  "height": 1024,
+  "categoryId": 1
+}
+
+
+### 4.1b 创建新草图（宽高越界，应返回400）
+POST {{baseUrl}}/sketches
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "越界测试",
+  "width": 100,
+  "height": 5000
+}
+
+
+### 4.2 查询我的草图列表（分页 + 筛选）
+GET {{baseUrl}}/sketches?page=1&size=10&keyword=云纹&categoryId=1&isPublic=false&sort=updatedAt,desc
+Authorization: Bearer {{accessToken}}
+
+
+### 4.2b 查询我的草图列表（含回收站）
+GET {{baseUrl}}/sketches?page=1&size=10&includeDeleted=true
+Authorization: Bearer {{accessToken}}
+
+
+### 4.3 获取草图详情
+### 将路径中的 1 替换为 4.1 返回的 sketchId
+GET {{baseUrl}}/sketches/1
+Authorization: Bearer {{accessToken}}
+
+
+### 4.4 保存草图（全量更新图层数据）
+PUT {{baseUrl}}/sketches/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "云纹草图v3",
+  "layersJson": {
+    "version": "1.0",
+    "canvas": { "width": 1024, "height": 1024 },
+    "layers": [
+      {
+        "id": "layer_1",
+        "name": "背景",
+        "type": "raster",
+        "visible": true,
+        "opacity": 1.0,
+        "data": "base64_encoded_image_data..."
+      },
+      {
+        "id": "layer_2",
+        "name": "线条层",
+        "type": "vector",
+        "visible": true,
+        "paths": [
+          { "d": "M10,10 L100,100", "stroke": "#000000", "width": 2 }
+        ]
+      }
+    ]
+  },
+  "imageBase64": "data:image/png;base64,iVBORw0KGgo...",
+  "isAutoSave": false,
+  "tags": ["云纹", "草稿"]
+}
+
+
+### 4.5 设置草图公开/私密
+PATCH {{baseUrl}}/sketches/1/visibility
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "isPublic": true
+}
+
+
+### 4.8 创建版本快照
+POST {{baseUrl}}/sketches/1/versions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "changeDesc": "完成云纹主体绘制",
+  "layersJson": {
+    "version": "1.0",
+    "canvas": { "width": 1024, "height": 1024 },
+    "layers": []
+  },
+  "imageBase64": "data:image/png;base64,iVBORw0KGgo..."
+}
+
+
+### 4.9 获取版本历史（分页）
+GET {{baseUrl}}/sketches/1/versions?page=1&size=20
+Authorization: Bearer {{accessToken}}
+
+
+### 4.10 获取指定版本详情
+### 将第二个 1 替换为 4.8/4.9 返回的 versionId
+GET {{baseUrl}}/sketches/1/versions/1
+Authorization: Bearer {{accessToken}}
+
+
+### 4.11 回退到指定版本
+POST {{baseUrl}}/sketches/1/versions/1/restore
+Authorization: Bearer {{accessToken}}
+
+
+### 4.12 导入本地图片（multipart/form-data）
+### 将 < 后的路径替换为本地真实图片路径（PNG/JPG/SVG，最大20MB）
+POST {{baseUrl}}/sketches/1/import
+Authorization: Bearer {{accessToken}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryZaran
+
+------WebKitFormBoundaryZaran
+Content-Disposition: form-data; name="asLayer"
+
+true
+------WebKitFormBoundaryZaran
+Content-Disposition: form-data; name="layerName"
+
+导入图层
+------WebKitFormBoundaryZaran
+Content-Disposition: form-data; name="file"; filename="test.png"
+Content-Type: image/png
+
+< ./test.png
+------WebKitFormBoundaryZaran--
+
+
+### 4.6 删除草图（软删除，移入回收站）
+DELETE {{baseUrl}}/sketches/1
+Authorization: Bearer {{accessToken}}
+
+
+### 4.7 恢复已删除草图
+POST {{baseUrl}}/sketches/1/recover
+Authorization: Bearer {{accessToken}}
+
+
+### 4.14 未登录访问草图列表（应返回401/403）
+GET {{baseUrl}}/sketches

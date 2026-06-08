@@ -45,6 +45,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/users/*/sketches").permitAll()
                         // 用户模块其他操作（关注/取消关注等）需要认证
                         .requestMatchers("/api/users/**").authenticated()
+                        // 草图模块：分类树公开，其余需认证
+                        .requestMatchers(HttpMethod.GET, "/api/sketches/categories").permitAll()
+                        .requestMatchers("/api/sketches/**").authenticated()
                         // 作品广场公开
                         .requestMatchers("/api/patterns/square/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/patterns/{patternId}").permitAll()
