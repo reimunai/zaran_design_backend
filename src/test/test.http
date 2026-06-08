@@ -5,8 +5,8 @@
 
 ### 变量定义（首次执行注册/登录后，手动将token填入下方变量）
 @baseUrl = http://localhost:8080/api
-@accessToken = eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoidG91cmlzdCIsInR5cGUiOiJhY2Nlc3MiLCJ1c2VySWQiOjIsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJzdWIiOiJ0ZXN0dXNlciIsImlhdCI6MTc4MDc1NjM0MiwiZXhwIjoxNzgwNzYzNTQyfQ.JQ7vmGWeYCPr4hSIlUoucE06d8DyGjj1nVyCa4uxj-Yehcymf9MpgB1YZF3jYBGS
-@refreshToken = eyJhbGciOiJIUzM4NCJ9.eyJ0eXBlIjoicmVmcmVzaCIsInVzZXJJZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsInN1YiI6InRlc3R1c2VyIiwiaWF0IjoxNzgwNzU2MzQyLCJleHAiOjE3ODEzNjExNDJ9.hPKqcyrSMRmZ8k4lW1RwDJMqP8pV8_2by_AKGF848V5Y7T2cD1ILCqFSXprZJ-h7
+@accessToken = eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoidG91cmlzdCIsInR5cGUiOiJhY2Nlc3MiLCJ1c2VySWQiOjIsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJzdWIiOiJ0ZXN0dXNlciIsImlhdCI6MTc4MDg5NzI4NSwiZXhwIjoxNzgwOTA0NDg1fQ.9py0Kz4UQych1Lh_kM-wdDFWbkPiTTG_LWzlEBe3L_ofP63Cq75V5g7bKHSjC8Ji
+@refreshToken = eyJhbGciOiJIUzM4NCJ9.eyJ0eXBlIjoicmVmcmVzaCIsInVzZXJJZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsInN1YiI6InRlc3R1c2VyIiwiaWF0IjoxNzgwODk3Mjg1LCJleHAiOjE3ODE1MDIwODV9.ktxM5iSc0g-VYI7SpKv7OqOkkEH5FM06BLppb3irphvPE0vknvXiyV2rKTMTnjWN
 
 
 
@@ -204,6 +204,33 @@ GET {{baseUrl}}/users/profile
 
 ### 4.13 获取草图分类树（公开接口，无需token）
 GET {{baseUrl}}/sketches/categories
+
+
+### 4.14 新增草图分类（仅传承人/管理员；普通游客会返回403）
+### 库中无分类时，先用传承人/管理员账号执行此接口，再用返回的 categoryId 跑 4.1
+POST {{baseUrl}}/sketches/categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "云纹",
+  "description": "象征吉祥如意",
+  "parentId": null,
+  "sortOrder": 1
+}
+
+
+### 4.14b 新增子分类（parentId 填 4.14 返回的 categoryId）
+POST {{baseUrl}}/sketches/categories
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "单螺旋",
+  "description": "螺旋纹子类",
+  "parentId": 1,
+  "sortOrder": 1
+}
 
 
 ### 4.1 创建新草图

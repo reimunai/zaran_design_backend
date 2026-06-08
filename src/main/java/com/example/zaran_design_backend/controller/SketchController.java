@@ -41,6 +41,16 @@ public class SketchController {
     }
 
     /**
+     * 4.2.14 新增草图分类（仅传承人/管理员）
+     * POST /api/sketches/categories
+     */
+    @PostMapping("/categories")
+    public Result<CategoryNode> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
+        String role = currentRole();
+        return Result.ok("分类创建成功", sketchService.createCategory(request, role));
+    }
+
+    /**
      * 4.2.1 创建新草图
      * POST /api/sketches
      */

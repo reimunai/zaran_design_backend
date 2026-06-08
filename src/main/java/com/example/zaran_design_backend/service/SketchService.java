@@ -429,6 +429,32 @@ public class SketchService {
         return roots;
     }
 
+    // ============================ 4.2.14 新增草图分类 ============================
+
+    /**
+     * 创建草图分类。仅传承人（inheritor）和管理员（admin）可操作。
+     * 若指定 parentId，则父分类必须存在。
+     */
+    @Transactional
+    public CategoryNode createCategory(CreateCategoryRequest request, String currentRole) {
+        if (!"inheritor".equalsIgnoreCase(currentRole) && !"admin".equalsIgnoreCase(currentRole)) {
+            throw new BusinessException(403, "无权创建草图分类，仅传承人或管理员可操作");
+        }
+
+        if (request.getParentId() != null && !categoryRepository.existsById(request.getParentId())) {
+            throw new BusinessException(404, "parentId 对应父分类不存在");
+        }
+
+        SketchCategory category = new SketchCategory();
+        category.setName(request.getName().trim());
+        category.setDescription(request.getDescription());
+        category.setParentId(request.getParentId());
+        category.setSortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0);
+
+        categoryRepository.save(category);
+        return CategoryNode.of(category);
+    }
+
     // ============================ 辅助方法 ============================
 
     /** 要求草图存在、未删除且属于当前用户，否则抛业务异常 */
