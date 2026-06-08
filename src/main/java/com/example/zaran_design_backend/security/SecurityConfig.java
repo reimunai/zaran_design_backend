@@ -48,10 +48,13 @@ public class SecurityConfig {
                         // 草图模块：分类树公开，其余需认证
                         .requestMatchers(HttpMethod.GET, "/api/sketches/categories").permitAll()
                         .requestMatchers("/api/sketches/**").authenticated()
-                        // 作品广场公开
+                        // 作品广场公开（无需登录）
                         .requestMatchers("/api/patterns/square/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/patterns/{patternId}").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/patterns/{patternId}/comments").permitAll()
+                        // 作品详情、评论列表、点赞 公开（可选认证，控制器内部做个性化判断）
+                        .requestMatchers(HttpMethod.GET, "/api/patterns/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/patterns/*/comments").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/patterns/*/like").permitAll()
+                        // 作品模块其他接口需要认证
                         .requestMatchers("/api/patterns/**").authenticated()
                         // 知识库公开
                         .requestMatchers("/api/knowledge/categories").permitAll()

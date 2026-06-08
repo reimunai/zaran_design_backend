@@ -33,7 +33,8 @@ public class Sketch {
     private Integer categoryId;
 
     /** 图层结构数据（JSON 字符串） */
-    @Column(name = "layers_json", columnDefinition = "LONGTEXT")
+    @Lob
+    @Column(name = "layers_json")
     private String layersJson;
 
     /** 标签，逗号分隔存储 */
@@ -41,7 +42,8 @@ public class Sketch {
     private String tags;
 
     /** 缩略图地址（无 MinIO 环境下存储 data URL 或占位地址） */
-    @Column(name = "thumbnail_path", columnDefinition = "LONGTEXT")
+    @Lob
+    @Column(name = "thumbnail_path")
     private String thumbnailPath;
 
     @Column(name = "is_public", nullable = false)

@@ -28,10 +28,12 @@ public class SketchVersion {
     private String changeDesc;
 
     /** 该版本的图层快照（JSON 字符串） */
-    @Column(name = "layers_json", columnDefinition = "LONGTEXT")
+    @Lob
+    @Column(name = "layers_json")
     private String layersJson;
 
-    @Column(name = "thumbnail_path", columnDefinition = "LONGTEXT")
+    @Lob
+    @Column(name = "thumbnail_path")
     private String thumbnailPath;
 
     @Column(name = "created_at", nullable = false, updatable = false)
