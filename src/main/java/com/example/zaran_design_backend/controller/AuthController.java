@@ -111,4 +111,18 @@ public class AuthController {
             return Result.error(400, e.getMessage());
         }
     }
+
+    /**
+     * [DEBUG] 注册/重置管理员账号（无需认证，仅调试用）
+     * POST /api/auth/register/admin
+     */
+    @PostMapping("/register/admin")
+    public Result<LoginResponse> registerAdmin(@Valid @RequestBody LoginRequest request) {
+        try {
+            LoginResponse response = authService.registerAdmin(request.getUsername(), request.getPassword());
+            return Result.ok("管理员账号已就绪", response);
+        } catch (RuntimeException e) {
+            return Result.error(400, e.getMessage());
+        }
+    }
 }

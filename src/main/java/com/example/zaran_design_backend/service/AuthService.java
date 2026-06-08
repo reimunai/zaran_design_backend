@@ -129,6 +129,36 @@ public class AuthService {
     }
 
     /**
+     * 注册/重置管理员账号（仅调试用）
+     * 如果管理员已存在则重置密码，不存在则创建
+     */
+    public LoginResponse registerAdmin(String username, String password) {
+        User user = userRepository.findByUsername(username).orElse(null);
+
+        if (user != null) {
+            // 已存在则重置密码并确保角色为admin
+            user.setPassword(passwordEncoder.encode(password));
+            if (user.getRole() != User.Role.admin) {
+                user.setRole(User.Role.admin);
+            }
+            user.setIsDisabled(false);
+            userRepository.save(user);
+        } else {
+            // 创建新的管理员账号
+            user = new User();
+            user.setUsername(username);
+            user.setPassword(passwordEncoder.encode(password));
+            user.setRole(User.Role.admin);
+            userRepository.save(user);
+        }
+
+        String accessToken = jwtUtils.generateAccessToken(user.getUserId(), user.getUsername(), user.getRole().name());
+        String refreshToken = jwtUtils.generateRefreshToken(user.getUserId(), user.getUsername());
+
+        return LoginResponse.of(accessToken, refreshToken, jwtUtils.getAccessTokenExpiration(), user);
+    }
+
+    /**
      * 重置密码（简化版：验证码校验 + 修改密码）
      */
     public void resetPassword(PasswordResetRequest request) {

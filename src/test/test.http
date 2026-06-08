@@ -5,8 +5,8 @@
 
 ### 变量定义（首次执行注册/登录后，手动将token填入下方变量）
 @baseUrl = http://localhost:8080/api
-@accessToken = eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoidG91cmlzdCIsInR5cGUiOiJhY2Nlc3MiLCJ1c2VySWQiOjIsInVzZXJuYW1lIjoidGVzdHVzZXIiLCJzdWIiOiJ0ZXN0dXNlciIsImlhdCI6MTc4MDg5NzI4NSwiZXhwIjoxNzgwOTA0NDg1fQ.9py0Kz4UQych1Lh_kM-wdDFWbkPiTTG_LWzlEBe3L_ofP63Cq75V5g7bKHSjC8Ji
-@refreshToken = eyJhbGciOiJIUzM4NCJ9.eyJ0eXBlIjoicmVmcmVzaCIsInVzZXJJZCI6MiwidXNlcm5hbWUiOiJ0ZXN0dXNlciIsInN1YiI6InRlc3R1c2VyIiwiaWF0IjoxNzgwODk3Mjg1LCJleHAiOjE3ODE1MDIwODV9.ktxM5iSc0g-VYI7SpKv7OqOkkEH5FM06BLppb3irphvPE0vknvXiyV2rKTMTnjWN
+@accessToken = eyJhbGciOiJIUzM4NCJ9.eyJyb2xlIjoiYWRtaW4iLCJ0eXBlIjoiYWNjZXNzIiwidXNlcklkIjozLCJ1c2VybmFtZSI6ImFkbWluMSIsInN1YiI6ImFkbWluMSIsImlhdCI6MTc4MDg5OTg4MSwiZXhwIjoxNzgwOTA3MDgxfQ.c0S_foBpHURtavc7YHon7ccpMZ2ta-n5JKBKlT2fLXWNqLXpSfDnOf4mAZD-FWjA
+@refreshToken = eyJhbGciOiJIUzM4NCJ9.eyJ0eXBlIjoicmVmcmVzaCIsInVzZXJJZCI6MywidXNlcm5hbWUiOiJhZG1pbjEiLCJzdWIiOiJhZG1pbjEiLCJpYXQiOjE3ODA4OTk4ODEsImV4cCI6MTc4MTUwNDY4MX0.rlRIQgk6HJ2VtAHzqsMLELdw9hLkNk7OJHaTMe1L3FQgnvYoFCna7zTB4y4V8R3l
 
 
 
@@ -25,7 +25,14 @@ Content-Type: application/json
   "email": "test@zaran.com",
   "role": "tourist"
 }
+### 管理员注册
+POST {{baseUrl}}/auth/register/admin
+Content-Type: application/json
 
+{
+"username": "admin1",
+"password": "123456"
+}
 
 ### 1.2 用户登录（用户名密码）
 POST {{baseUrl}}/auth/login
@@ -36,6 +43,14 @@ Content-Type: application/json
   "password": "123456"
 }
 
+### 1.2 管理员登录（用户名密码）
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin1",
+  "password": "123456"
+}
 
 ### 1.3 用户登录（手机号）
 POST {{baseUrl}}/auth/login
