@@ -64,6 +64,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/knowledge/**").authenticated()
                         // 生成队列状态公开
                         .requestMatchers(HttpMethod.GET, "/api/generation/queue/status").permitAll()
+                        // 系统管理模块（全部需要认证，控制器内部校验 admin 角色）
+                        .requestMatchers("/api/admin/**").authenticated()
                         // 其他接口需要认证
                         .anyRequest().authenticated()
                 )
