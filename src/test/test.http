@@ -415,6 +415,203 @@ GET {{baseUrl}}/sketches
 
 
 
+### ============================================
+### 七、协同编辑模块 /api/collab
+### （需先执行登录，将返回的accessToken填入顶部变量）
+### 测试顺序建议：7.1 → 7.2 → 7.3 → 7.4 → 7.5 → 7.6 → 7.7 → 7.8 → 7.9
+### 将各接口路径中的 {sessionId}/{versionId}/{userId} 替换为前序接口返回的真实ID
+### ============================================
+
+### 7.1 创建协同会话（关联已有图案 + 邀请参与者）
+POST {{baseUrl}}/collab/sessions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "patternId": 3001,
+  "sessionName": "云纹图案优化讨论",
+  "invitees": [
+    {"userId": 10002, "permission": "edit"},
+    {"userId": 10003, "permission": "comment"}
+  ]
+}
+
+### 7.1b 创建协同会话（新建空白画布，无关联图案）
+POST {{baseUrl}}/collab/sessions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "patternId": null,
+  "sessionName": "自由创作协同画布",
+  "invitees": []
+}
+
+### 7.1c 创建协同会话（缺少sessionName，应返回400）
+POST {{baseUrl}}/collab/sessions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "patternId": null,
+  "sessionName": ""
+}
+
+### 7.2 我的协同会话列表（分页）
+GET {{baseUrl}}/collab/sessions?page=1&size=10
+Authorization: Bearer {{accessToken}}
+
+### 7.3 会话详情（参与者/管理员可查看）
+### 将路径中的 6001 替换为 7.1 返回的 sessionId
+GET {{baseUrl}}/collab/sessions/6001
+Authorization: Bearer {{accessToken}}
+
+### 7.3b 非参与者查看会话详情（应返回403）
+GET {{baseUrl}}/collab/sessions/6001
+Authorization: Bearer {{accessToken}}
+
+### 7.4 邀请参与者（仅所有者可操作）
+### 将路径中的 6001 替换为真实 sessionId
+POST {{baseUrl}}/collab/sessions/6001/invite
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": 10004,
+  "permission": "view"
+}
+
+### 7.4b 邀请参与者（重复邀请，应返回409）
+POST {{baseUrl}}/collab/sessions/6001/invite
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": 10004,
+  "permission": "edit"
+}
+
+### 7.4c 邀请不存在的用户（应返回4041）
+POST {{baseUrl}}/collab/sessions/6001/invite
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "userId": 99999,
+  "permission": "view"
+}
+
+### 7.5 修改参与者权限（仅所有者可操作）
+### 将 6001 和 10002 替换为真实的 sessionId 和 userId
+PUT {{baseUrl}}/collab/sessions/6001/participants/10002
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "permission": "comment"
+}
+
+### 7.5b 修改参与者权限（非所有者操作，应返回4031）
+PUT {{baseUrl}}/collab/sessions/6001/participants/10002
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "permission": "edit"
+}
+
+### 7.5c 修改不存在的参与者权限（应返回404）
+PUT {{baseUrl}}/collab/sessions/6001/participants/99999
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "permission": "view"
+}
+
+### 7.6 移除参与者（仅所有者可操作）
+### 将 6001 和 10003 替换为真实的 sessionId 和 userId
+DELETE {{baseUrl}}/collab/sessions/6001/participants/10003
+Authorization: Bearer {{accessToken}}
+
+### 7.6b 移除参与者（非所有者操作，应返回4031）
+DELETE {{baseUrl}}/collab/sessions/6001/participants/10002
+Authorization: Bearer {{accessToken}}
+
+### 7.7 获取操作历史（参与者可查看）
+### 将 6001 替换为真实 sessionId
+GET {{baseUrl}}/collab/sessions/6001/history?page=1&size=50
+Authorization: Bearer {{accessToken}}
+
+### 7.7b 获取操作历史（指定版本范围）
+GET {{baseUrl}}/collab/sessions/6001/history?versionStart=1&versionEnd=10&page=1&size=50
+Authorization: Bearer {{accessToken}}
+
+### 7.8 手动保存版本（需编辑权限）
+### 将 6001 替换为真实 sessionId
+POST {{baseUrl}}/collab/sessions/6001/versions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "changeDesc": "完成云纹主体轮廓绘制",
+  "layersJson": {
+    "version": "1.0",
+    "canvas": {"width": 1024, "height": 1024},
+    "layers": [
+      {
+        "id": "layer_1",
+        "name": "背景层",
+        "type": "raster",
+        "visible": true,
+        "opacity": 1.0,
+        "data": "base64_encoded_image_data..."
+      },
+      {
+        "id": "layer_2",
+        "name": "云纹轮廓",
+        "type": "vector",
+        "visible": true,
+        "paths": [
+          {"d": "M100,100 Q200,50 300,100 T500,100", "stroke": "#1a237e", "width": 3}
+        ]
+      }
+    ]
+  }
+}
+
+### 7.8b 手动保存版本（无编辑权限，应返回403）
+POST {{baseUrl}}/collab/sessions/6001/versions
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "changeDesc": "尝试保存"
+}
+
+### 7.9 回滚到指定版本（仅所有者可操作）
+### 将 6001 和 1 替换为真实的 sessionId 和 versionId（versionId 来自 7.8 返回）
+POST {{baseUrl}}/collab/sessions/6001/versions/1/rollback
+Authorization: Bearer {{accessToken}}
+
+### 7.9b 回滚到不存在的版本（应返回404）
+POST {{baseUrl}}/collab/sessions/6001/versions/99999/rollback
+Authorization: Bearer {{accessToken}}
+
+### 7.10 关闭协同会话（仅所有者可操作）
+### 将 6001 替换为真实 sessionId
+POST {{baseUrl}}/collab/sessions/6001/close
+Authorization: Bearer {{accessToken}}
+
+### 7.10b 关闭已关闭的会话（应返回404）
+POST {{baseUrl}}/collab/sessions/6001/close
+Authorization: Bearer {{accessToken}}
+
+### 7.11 未登录访问协同接口（应返回401）
+GET {{baseUrl}}/collab/sessions
+
+
+
 //工艺知识板块
 ### 测试 1：获取 1 号知识点关联的图案列表
 GET http://localhost:8088/api/knowledge/entries/1/related-patterns
