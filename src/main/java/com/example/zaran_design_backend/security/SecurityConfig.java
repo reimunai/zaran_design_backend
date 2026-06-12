@@ -62,8 +62,14 @@ public class SecurityConfig {
                         .requestMatchers("/api/knowledge/search").permitAll()
                         .requestMatchers("/api/knowledge/terminology/**").permitAll()
                         .requestMatchers("/api/knowledge/**").authenticated()
+                        // 协同编辑模块（全部需要认证，控制器/WebSocket内部做参与者权限校验）
+                        .requestMatchers("/api/collab/**").authenticated()
+                        // WebSocket 协同编辑端点（由 Handler 自行校验 token 参数）
+                        .requestMatchers("/ws/collab/**").permitAll()
                         // 生成队列状态公开
                         .requestMatchers(HttpMethod.GET, "/api/generation/queue/status").permitAll()
+                        // 系统管理模块（全部需要认证，控制器内部校验 admin 角色）
+                        .requestMatchers("/api/admin/**").authenticated()
                         // 其他接口需要认证
                         .anyRequest().authenticated()
                 )
