@@ -22,9 +22,8 @@ public class TermDictionary {
     private String english;
 
     @Column(columnDefinition = "TEXT", nullable = false)
-    @Lob
-    @Column(nullable = false)
     private String definition;
+
 
     @Column(name = "example_image", length = 255)
     private String exampleImage;
