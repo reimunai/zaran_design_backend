@@ -80,7 +80,7 @@ public class GenerationController {
     public Result<Void> cancelTask(@PathVariable String taskId) {
         Integer userId = currentUserId();
         generationService.cancelTask(userId, taskId);
-        return Result.ok("任务已取消");
+        return Result.ok("任务已取消", null);
     }
 
     /**
@@ -111,7 +111,7 @@ public class GenerationController {
     @PostMapping("/results/{resultId}/rate")
     public Result<Void> rateResult(@PathVariable Long resultId, @Valid @RequestBody RateRequest request) {
         generationService.rateResult(resultId, request);
-        return Result.ok("评分成功");
+        return Result.ok("评分成功", null);
     }
 
     /**

@@ -11,4 +11,7 @@ public interface SketchRepository extends JpaRepository<Sketch, Integer>,
 
     /** 按ID查询未删除的草图 */
     Optional<Sketch> findBySketchIdAndDeletedAtIsNull(Integer sketchId);
+
+    /** 检查草图是否存在且属于指定用户 */
+    boolean existsBySketchIdAndUserId(Integer sketchId, Integer userId);
 }
