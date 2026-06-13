@@ -41,8 +41,8 @@ public class FileUploadController {
             File destFile = new File(uploadDir + newFilename);
             file.transferTo(destFile);
 
-            // 6. 拼接出可以用浏览器访问这张图片的完整网络地址 (注意替换成你的实际端口号 8088)
-            String imageUrl = "http://localhost:8088/uploads/" + newFilename;
+            // 6. 拼接出可以用浏览器访问这张图片的完整网络地址（默认端口 8080）
+            String imageUrl = "http://localhost:8080/uploads/" + newFilename;
 
             // 7. 把这个网络地址发回给前端
             return Result.ok("图片上传成功！", imageUrl);

@@ -612,37 +612,183 @@ GET {{baseUrl}}/collab/sessions
 
 
 
-//工艺知识板块
-### 测试 1：获取 1 号知识点关联的图案列表
-GET http://localhost:8088/api/knowledge/entries/1/related-patterns
-Accept: application/json
+### ============================================
+### 八、工艺知识模块 /api/knowledge
+### （需先执行登录，将返回的accessToken填入顶部变量）
+### 测试顺序建议：8.1 → 8.2 → 8.3 → 8.4 → 8.5 → 8.6 → 8.7 → 8.8 → 8.9
+### 将各接口路径中的 {entryId} 替换为前序接口返回的真实ID
+### ============================================
 
-### 测试 2：模拟 3 号普通游客用户，收藏 1 号知识点并写下笔记
-POST http://localhost:8088/api/knowledge/entries/1/notes
+### 8.1 获取已发布知识列表（公开接口，无需token）
+GET {{baseUrl}}/knowledge/entries
+
+### 8.1b 获取已发布知识列表（按分类筛选）
+GET {{baseUrl}}/knowledge/entries?category=technique
+
+### 8.2 获取术语词典（公开接口，无需token）
+GET {{baseUrl}}/knowledge/terminology
+
+### 8.3 提交新知识条目（需登录）
+POST {{baseUrl}}/knowledge/entries
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "白族扎染中的绞缬技法详解",
+  "content": "绞缬（扎染）是大理白族最具代表性的传统手工艺之一。本文详细介绍了绞缬技法的历史渊源、工艺流程以及在现代设计中的应用...",
+  "category": "technique",
+  "imageAttachments": ["https://example.com/images/zharan_01.jpg", "https://example.com/images/zharan_02.jpg"]
+}
+
+### 8.3b 提交新知识条目（缺少必填字段，应返回400）
+POST {{baseUrl}}/knowledge/entries
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "",
+  "content": "",
+  "category": "technique"
+}
+
+### 8.4 获取知识详情（公开接口，无需token）
+### 将路径中的 1 替换为 8.3 返回的 entryId
+GET {{baseUrl}}/knowledge/entries/1
+
+### 8.4b 获取不存在的知识详情（应返回404/500）
+GET {{baseUrl}}/knowledge/entries/99999
+
+### 8.5 修改知识条目（需登录，修改后状态重置为pending）
+### 将路径中的 1 替换为真实 entryId
+PUT {{baseUrl}}/knowledge/entries/1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "title": "白族扎染中的绞缬技法详解（修订版）",
+  "content": "绞缬（扎染）是大理白族最具代表性的传统手工艺之一。本文详细介绍了绞缬技法的历史渊源、工艺流程以及在现代设计中的应用...（补充了传承人采访内容）",
+  "category": "technique",
+  "imageAttachments": ["https://example.com/images/zharan_01_v2.jpg"]
+}
+
+### 8.6 获取知识点关联的图案列表（公开接口，无需token）
+### 将路径中的 1 替换为真实 entryId
+GET {{baseUrl}}/knowledge/entries/1/related-patterns
+
+### 8.6b 获取无关联图案的知识点（应返回空列表）
+GET {{baseUrl}}/knowledge/entries/99999/related-patterns
+
+### 8.7 收藏知识点并提交笔记（需登录）
+### 将路径中的 1 替换为真实 entryId，userId 替换为当前登录用户ID
+POST {{baseUrl}}/knowledge/entries/1/notes
+Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 
 {
   "userId": 3,
   "personalNote": "这个浸染手法太赞了，下次协同创作可以用上！"
 }
-### 动作 1：先查看目前有多少“待审核”的知识
-GET http://localhost:8088/api/knowledge/entries/pending
 
-### 动作 2：传承人觉得这篇写得好，点击“审核通过”
-# （假设动作1中查出来的某条待审核知识的 entryId 是 6，请把下面 URL 里的 6 换成你查到的真实 ID）
-PUT http://localhost:8088/api/knowledge/entries/6/approve
+### 8.7b 再次收藏同一知识点（更新笔记内容，验证 Save Or Update）
+POST {{baseUrl}}/knowledge/entries/1/notes
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
 
-### 动作 3：去“已发布”列表里看看，是不是多了一篇刚才通过的文章！
-GET http://localhost:8088/api/knowledge/entries
+{
+  "userId": 3,
+  "personalNote": "补充笔记：绞缬技法的关键在于捆扎的松紧度和浸染时间，需要反复实践。"
+}
 
-### 测试图片上传 (注意：请把底下那行路径改成你电脑上一张真实图片的路径)
-POST http://localhost:8088/api/upload/image
-Content-Type: multipart/form-data; boundary=WebAppBoundary
+### 8.7c 收藏不存在的知识点（应返回404/500）
+POST {{baseUrl}}/knowledge/entries/99999/notes
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
 
---WebAppBoundary
-Content-Disposition: form-data; name="file"; filename="test.jpg"
+{
+  "userId": 3,
+  "personalNote": "这个知识点不存在"
+}
+
+### 8.8 查询用户对某知识点的笔记（需登录）
+### 将 entryId=1 和 userId=3 替换为真实值
+GET {{baseUrl}}/knowledge/entries/1/notes?userId=3
+Authorization: Bearer {{accessToken}}
+
+### 8.8b 查询未收藏的知识点笔记（应返回null）
+GET {{baseUrl}}/knowledge/entries/1/notes?userId=99999
+Authorization: Bearer {{accessToken}}
+
+### 8.9 取消收藏（需登录）
+### 将 entryId=1 和 userId=3 替换为真实值
+DELETE {{baseUrl}}/knowledge/entries/1/notes?userId=3
+Authorization: Bearer {{accessToken}}
+
+
+### ============================================
+### 八-B、工艺知识审核工作流（需传承人/管理员权限）
+### 测试顺序：8.10 → 8.11（或 8.12）
+### ============================================
+
+### 8.10 获取待审核知识列表（需传承人/管理员登录）
+GET {{baseUrl}}/knowledge/entries/pending
+Authorization: Bearer {{accessToken}}
+
+### 8.11 审核通过（需传承人/管理员权限）
+### 将路径中的 1 替换为 8.10 返回的待审核 entryId
+PUT {{baseUrl}}/knowledge/entries/1/approve
+Authorization: Bearer {{accessToken}}
+
+### 8.11b 重复审核同一知识点（应返回错误）
+PUT {{baseUrl}}/knowledge/entries/1/approve
+Authorization: Bearer {{accessToken}}
+
+### 8.12 审核驳回（需传承人/管理员权限）
+### 将路径中的 2 替换为 8.10 返回的另一条待审核 entryId
+PUT {{baseUrl}}/knowledge/entries/2/reject
+Authorization: Bearer {{accessToken}}
+
+### 8.13 删除知识条目（需管理员权限）
+### 将路径中的 1 替换为真实 entryId
+DELETE {{baseUrl}}/knowledge/entries/1
+Authorization: Bearer {{accessToken}}
+
+### 8.14 未登录访问需认证的接口（应返回401/403）
+GET {{baseUrl}}/knowledge/entries/pending
+
+
+### ============================================
+### 九、通用文件上传模块 /api/upload
+### ============================================
+
+### 9.1 上传图片（multipart/form-data，最大20MB）
+### 将 < 后的路径替换为本地真实图片路径（PNG/JPG，最大20MB）
+POST {{baseUrl}}/upload/image
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryZaran
+
+------WebKitFormBoundaryZaran
+Content-Disposition: form-data; name="file"; filename="test_upload.jpg"
 Content-Type: image/jpeg
 
-< "C:\Users\沙小光\Desktop\bb72fd8bf167fb3b8ab65ea737925c04.png"
---WebAppBoundary--
-//工艺知识板块
+< ./test_upload.jpg
+------WebKitFormBoundaryZaran--
+
+### 9.2 上传空文件（应返回失败）
+POST {{baseUrl}}/upload/image
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryZaran
+
+------WebKitFormBoundaryZaran
+Content-Disposition: form-data; name="file"; filename="empty.jpg"
+Content-Type: image/jpeg
+
+------WebKitFormBoundaryZaran--
+
+### 9.3 上传超大文件（超过20MB，应返回413）
+POST {{baseUrl}}/upload/image
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryZaran
+
+------WebKitFormBoundaryZaran
+Content-Disposition: form-data; name="file"; filename="large.jpg"
+Content-Type: image/jpeg
+
+< ./large_test_file.jpg
+------WebKitFormBoundaryZaran--
