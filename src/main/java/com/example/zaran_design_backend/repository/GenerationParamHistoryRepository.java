@@ -18,7 +18,7 @@ public interface GenerationParamHistoryRepository extends JpaRepository<Generati
     Page<GenerationParamHistory> findByUserIdOrderByUseCountDescLastUsedAtDesc(Integer userId, Pageable pageable);
 
     /** 根据用户ID和参数组合查找记录 */
-    Optional<GenerationParamHistory> findByUserIdAndkValueAndNoiseLevelAndPatchMode(
+    Optional<GenerationParamHistory> findByUserIdAndKValueAndNoiseLevelAndPatchMode(
             Integer userId, Integer kValue, Float noiseLevel, Integer patchMode);
 
     /** 更新使用次数和最后使用时间 */

@@ -296,7 +296,7 @@ public class GenerationService {
     @Transactional
     private void updateParamHistory(Integer userId, Integer kValue, Float noiseLevel, Integer patchMode) {
         // 查找是否已有相同参数组合
-        paramHistoryRepository.findByUserIdAndkValueAndNoiseLevelAndPatchMode(userId, kValue, noiseLevel, patchMode)
+        paramHistoryRepository.findByUserIdAndKValueAndNoiseLevelAndPatchMode(userId, kValue, noiseLevel, patchMode)
                 .ifPresentOrElse(
                         existing -> paramHistoryRepository.incrementUseCount(existing.getHistoryId(), LocalDateTime.now()),
                         () -> {
